@@ -33,10 +33,6 @@ parser.add_argument('--gamma', '-g', default=gamma)
 args = parser.parse_args()
 
 
-# Initialize Empty DataFrame
-
-result = pd.DataFrame(columns=['path', 'x', 'y', 'w', 'h'])
-
 # Functions
 def bounding_box(im, contours):
     cv2.drawContours(im, contours, -1, 255, 3)
@@ -69,7 +65,7 @@ def bounding_box(im, contours):
     try:
         c = list(sorted_dict.keys())[-2]
     except:
-        return -1, -1, -1, -1
+        return 999999, 999999, 0, 0
 
     x,y,w,h = cv2.boundingRect(contours[c])
     return x, y, w, h 
@@ -79,6 +75,7 @@ if __name__ == "__main__":
     working_directory = [x for x in os.listdir() if 'HAM10000_images' in x]
     print(working_directory)
     
+    result = pd.DataFrame(columns=['path', 'x', 'y', 'w', 'h'])
     for directory in working_directory:
         for image_path in os.listdir(directory):
             path = os.path.join(directory, image_path)
@@ -113,12 +110,9 @@ if __name__ == "__main__":
             ##########################
             # END METHOD 2
             ##########################
-            if w1*h1 >= w2*h2:
+            if w1*h1 <= w2*h2:
                 x,y,w,h = x1,y1,w1,h1
             else:
                 x,y,w,h = x2,y2,w2,h2
-            
-            result.append(pd.DataFrame([[path, x, y, w, h]], columns=result.columns),ignore_index=True)
-
-
-    result.to_csv(args.output)
+            result = result.append(pd.DataFrame([[path, x, y, w, h]], columns=result.columns),ignore_index=True)
+            result.to_csv(args.output)
