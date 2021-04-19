@@ -11,3 +11,4 @@ pip install pandas
 pip install torch
 pip install opencv-python
 pip install scikit-image
+pip install imgaug
