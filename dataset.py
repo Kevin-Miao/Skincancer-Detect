@@ -69,10 +69,10 @@ class SkinData(Dataset):
         maxx = minx + w
         maxy = miny + h
 
-        target['area'] = w * h
+        target['area'] = torch.tensor([w * h])
         target['labels'] = torch.tensor(datapoint[-7:])
-        target['bbox'] = torch.tensor([minx, miny, maxx, maxy])
-        target['idx'] = idx
+        target['boxes'] = torch.tensor([minx, miny, maxx, maxy])
+        target["image_id"] = torch.tensor([idx])
 
         if self.transform is not None:
             image, target = self.transform((np.array(image), target))
@@ -93,15 +93,16 @@ def Resizing(resize=(300, 300)):
         image, target = it
         resize = res
         new_target = target.copy()
-        bbs = BoundingBoxesOnImage([BoundingBox(x1=new_target['bbox'][0].item(), y1=new_target['bbox'][1].item(
-        ), x2=new_target['bbox'][2].item(), y2=new_target['bbox'][3].item())], image.shape)
+        bbs = BoundingBoxesOnImage([BoundingBox(x1=new_target['boxes'][0].item(), y1=new_target['boxes'][1].item(),
+                                                x2=new_target['boxes'][2].item(), y2=new_target['boxes'][3].item())], image.shape)
         img = ia.imresize_single_image(np.array(image), resize)
         new_bbs = bbs.on(img)
-        bbox = [new_bbs[0].x1, new_bbs[0].y1, new_bbs[0].x2, new_bbs[0].y2]
-        new_target['bbox'] = bbox
-        new_target['area'] = (new_bbs[0].x2 - new_bbs[0].x1) * \
-            (new_bbs[0].y2 - new_bbs[0].y1)
-        return img, new_target
+        bbox = torch.tensor([new_bbs[0].x1, new_bbs[0].y1,
+                             new_bbs[0].x2, new_bbs[0].y2])
+        new_target['area'] = torch.tensor([(new_bbs[0].x2 - new_bbs[0].x1) *
+                                           (new_bbs[0].y2 - new_bbs[0].y1)])
+        new_target['boxes'] = bbox.unsqueeze(0)
+        return img, [new_target]
     return Resize
 
 
