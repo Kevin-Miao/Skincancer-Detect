@@ -1,7 +1,11 @@
 # Dataset
 
-HAM10000_images_part*
+.DS_Store
 
+__pycache__
+
+HAM10000_images_part*
+wandb
 dataset
 
 # Byte-compiled / optimized / DLL files
