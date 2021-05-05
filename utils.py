@@ -12,6 +12,45 @@ import errno
 import os
 
 
+import pandas as pd
+import os
+import numpy as np
+from PIL import Image
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+
+
+def draw_box(image, image_id, xmin, ymin, xmax, ymax, target=None, confidence=None, plot=True, path='annotated.jpg'):
+    """
+    Saves the image with the bounding box, confidence score and the label.
+    image: (np array)
+    x_min, y_min, x_max, y_max: bounding box coordinates
+    target: (int) will be mapped
+    confidence: (float) denotes the confidence score of the prediction
+    plot: (Bool) Will plot the function
+    """
+    mapping = {'akiec': 0, 'bcc': 1, 'bkl': 2,
+               'df': 3, 'mel': 4, 'nv': 5, 'vasc': 6}
+    inv_mapping = {0: 'akiec', 1: 'bcc', 2: 'bkl',
+                   3: 'df', 4: 'mel', 5: 'nv', 6: 'vasc'}
+    seg = np.array(Image.open(os.path.join(
+        'dataset/HAM10000_segmentations_lesion_tschandl', image_id + '_segmentation.png')))/255.
+    plt.imshow(image, alpha=0.5)
+    plt.gca().add_patch(mpatches.Rectangle((xmin, ymin), xmax-xmin, ymax-ymin,
+                                           edgecolor='red',
+                                           facecolor='none',
+                                           lw=2))
+    if target:
+        plt.text(x=xmin, y=ymin - 10, s='{} : {}'.format(
+            inv_mapping[target], np.round(confidence, 5)), color='white', size=12)
+
+    if plot:
+        plt.show()
+
+    plt.savefig(path)
+    return None
+
+
 class SmoothedValue(object):
     """Track a series of values and provide access to smoothed values over a
     window or the global series average.
@@ -36,7 +75,8 @@ class SmoothedValue(object):
         """
         if not is_dist_avail_and_initialized():
             return
-        t = torch.tensor([self.count, self.total], dtype=torch.float64, device='cuda')
+        t = torch.tensor([self.count, self.total],
+                         dtype=torch.float64, device='cuda')
         dist.barrier()
         dist.all_reduce(t)
         t = t.tolist()
@@ -103,9 +143,11 @@ def all_gather(data):
     # gathering tensors of different shapes
     tensor_list = []
     for _ in size_list:
-        tensor_list.append(torch.empty((max_size,), dtype=torch.uint8, device="cuda"))
+        tensor_list.append(torch.empty(
+            (max_size,), dtype=torch.uint8, device="cuda"))
     if local_size != max_size:
-        padding = torch.empty(size=(max_size - local_size,), dtype=torch.uint8, device="cuda")
+        padding = torch.empty(size=(max_size - local_size,),
+                              dtype=torch.uint8, device="cuda")
         tensor = torch.cat((tensor, padding), dim=0)
     dist.all_gather(tensor_list, tensor)
 

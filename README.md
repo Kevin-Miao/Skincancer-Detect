@@ -15,6 +15,10 @@
 
 Dataset can be found here: 
 
+## Labels
+
+`{'akiec': 0, 'bcc': 1, 'bkl': 2, 'df': 3, 'mel': 4, 'nv': 5, 'vasc': 6}`
+
 ## Setup/Dependencies
 
 This part of the project uses `python 3.8` in a `conda` environment with the following dependencies. The `setup.sh` file can be run to initiate the online environment.

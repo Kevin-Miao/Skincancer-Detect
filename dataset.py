@@ -55,7 +55,7 @@ class SkinData(Dataset):
         image: (tensor) image after transformations
         target: (dictionary) contains the targets
             - 'bbox': (list) [xmin, ymin, xmax, ymax]
-            - 'labels': (tensor) (7,) One Hot Encoded Vector for the Disease Diagnoses
+            - 'labels': (int) One Hot Encoded Vector for the Disease Diagnoses
             - 'area': (float/int) area of bounding box
             - 'id': idx
         """
