@@ -20,6 +20,10 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 
+def collate_fn(batch):
+    return tuple(zip(*batch))
+
+
 def draw_box(image, image_id, xmin, ymin, xmax, ymax, target=None, confidence=None, plot=True, path='annotated.jpg'):
     """
     Saves the image with the bounding box, confidence score and the label.
