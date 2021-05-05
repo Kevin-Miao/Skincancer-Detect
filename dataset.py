@@ -61,18 +61,18 @@ class SkinData(Dataset):
         """
         datapoint = self.data.iloc[idx]
         image = Image.open(datapoint['path'])
+        image_id = datapoint['image_id']
         target = {}
-        minx = datapoint['x']
-        miny = datapoint['y']
-        w = datapoint['w']
-        h = datapoint['h']
-        maxx = minx + w
-        maxy = miny + h
+        minx = datapoint['xmin']
+        miny = datapoint['ymin']
+        maxx = datapoint['xmax']
+        maxy = datapoint['ymax']
+        area = (maxx - minx) * (maxy - miny)
 
-        target['area'] = torch.tensor([w * h]).unsqueeze(0)
-        target['labels'] = torch.tensor(datapoint[-7:])
+        target['area'] = area
+        target['labels'] = datapoint['diagnosis']
         target['boxes'] = torch.tensor([minx, miny, maxx, maxy]).unsqueeze(0)
-        target["image_id"] = torch.tensor([idx])
+        target["image_id"] = image_id
 
         if self.transform is not None:
             image, target = self.transform((np.array(image), target))
