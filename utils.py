@@ -104,7 +104,7 @@ def collate_fn(batch):
     return tuple(zip(*batch))
 
 
-def draw_box(image, image_id, xmin, ymin, xmax, ymax, target=None, confidence=None, plot=True, path='annotated.jpg'):
+def draw_box(image, image_id, bbox, target=None, confidence=None, plot=False, save=False, path='annotated.jpg'):
     """
     Saves the image with the bounding box, confidence score and the label.
     image: (np array)
@@ -113,26 +113,33 @@ def draw_box(image, image_id, xmin, ymin, xmax, ymax, target=None, confidence=No
     confidence: (float) denotes the confidence score of the prediction
     plot: (Bool) Will plot the function
     """
+    color = ['blue', 'orange', 'green', 'yellow', 'red', 'magenta', 'cyan']
+    fig, ax = plt.subplots()
     mapping = {'akiec': 0, 'bcc': 1, 'bkl': 2,
                'df': 3, 'mel': 4, 'nv': 5, 'vasc': 6}
     inv_mapping = {0: 'akiec', 1: 'bcc', 2: 'bkl',
                    3: 'df', 4: 'mel', 5: 'nv', 6: 'vasc'}
-    seg = np.array(Image.open(os.path.join(
-        'dataset/HAM10000_segmentations_lesion_tschandl', image_id + '_segmentation.png')))/255.
-    plt.imshow(image, alpha=0.5)
-    plt.gca().add_patch(mpatches.Rectangle((xmin, ymin), xmax-xmin, ymax-ymin,
-                                           edgecolor='red',
-                                           facecolor='none',
-                                           lw=2))
-    if target:
-        plt.text(x=xmin, y=ymin - 10, s='{} : {}'.format(
-            inv_mapping[target], np.round(confidence, 5)), color='white', size=12)
+    if image_id != None:
+        seg = np.array(Image.open(os.path.join(
+            'dataset/HAM10000_segmentations_lesion_tschandl', image_id + '_segmentation.png')))/255.
+    ax.imshow(image)
+    for idx, data in enumerate(bbox):
+        c = 'white' if target == None else color[target[idx]]
+        xmin, ymin, xmax, ymax = data
+        ax.add_patch(mpatches.Rectangle((xmin, ymin), xmax-xmin, ymax-ymin,
+                                        edgecolor=c,
+                                        facecolor='none',
+                                        lw=2))
+        if target:
+            ax.text(x=xmin, y=ymin - 10, s='{} : {}'.format(
+                inv_mapping[target[idx]], np.round(confidence, 5)), color=c, size=12)
 
     if plot:
-        plt.show()
+        fig.show()
 
-    plt.savefig(path)
-    return None
+    if save:
+        plt.savefig(path)
+    return fig
 
 
 class SmoothedValue(object):
@@ -167,25 +174,25 @@ class SmoothedValue(object):
         self.count = int(t[0])
         self.total = t[1]
 
-    @property
+    @ property
     def median(self):
         d = torch.tensor(list(self.deque))
         return d.median().item()
 
-    @property
+    @ property
     def avg(self):
         d = torch.tensor(list(self.deque), dtype=torch.float32)
         return d.mean().item()
 
-    @property
+    @ property
     def global_avg(self):
         return self.total / self.count
 
-    @property
+    @ property
     def max(self):
         return max(self.deque)
 
-    @property
+    @ property
     def value(self):
         return self.deque[-1]
 

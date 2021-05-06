@@ -69,10 +69,11 @@ class SkinData(Dataset):
         maxy = datapoint['ymax']
         area = (maxx - minx) * (maxy - miny)
 
-        target['area'] = area
+        target['area'] = torch.tensor([area])
+        target['category_id'] = torch.tensor([datapoint['diagnosis']])
         target['labels'] = torch.tensor([datapoint['diagnosis']])
         target['boxes'] = torch.tensor([[minx, miny, maxx, maxy]])
-        target["image_id"] = image_id
+        target["image_id"] = torch.tensor([int(image_id[5:])])
 
         if self.transform is not None:
             image, target = self.transform((np.array(image), target))
@@ -133,3 +134,24 @@ def Normalizer(meta):
         img = function(image)
         return img, target
     return normalize
+
+
+def UnNormalizer(meta):
+    def unnormalize(it):
+        """
+        Normalizes images according to the meta['mean'] and meta['std']
+        image: (Tensor) Image
+        target: (Dictionary) Containing BBox, Area, Labels and Index
+
+        Returns normalized_image, target
+        """
+        image, target = it
+        function = torchvision.transforms.Normalize(
+            mean=-meta['mean'],
+            std=1/meta['std'],
+        )
+        img = function(image)
+        return img, target
+
+
+    return unnormalize
