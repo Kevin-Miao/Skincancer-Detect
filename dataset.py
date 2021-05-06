@@ -70,14 +70,14 @@ class SkinData(Dataset):
         area = (maxx - minx) * (maxy - miny)
 
         target['area'] = area
-        target['labels'] = datapoint['diagnosis']
-        target['boxes'] = torch.tensor([minx, miny, maxx, maxy]).unsqueeze(0)
+        target['labels'] = torch.tensor([datapoint['diagnosis']])
+        target['boxes'] = torch.tensor([[minx, miny, maxx, maxy]])
         target["image_id"] = image_id
 
         if self.transform is not None:
             image, target = self.transform((np.array(image), target))
 
-        return image, [target]
+        return image, target
 
 
 def Resizing(resize=(300, 300)):

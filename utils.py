@@ -20,6 +20,86 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 
+class AverageMeter(object):
+    """Computes and stores the average and current value
+
+    >>> a = AverageMeter()
+    >>> a.update(1, 2)
+    >>> a.avg
+    1.0
+    >>> a.update(0, 1)
+    >>> a.avg
+    0.6666666666666666
+    >>> a.reset()
+    >>> a.val
+    0
+    >>> a.avg
+    0
+    >>> a.count
+    0
+    >>> a.sum
+    0
+
+    """
+
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count
+
+
+class ClassMeter(object):
+    """Computes and stores the average and current value
+
+    >>> c = ClassMeter(['a','b','c','d'])
+    >>> c.num_classes
+    4
+    >>> c.update(1, 1, n=4)
+    >>> c.sum
+    array([0., 4., 0., 0.])
+    >>> c.avg[1]
+    1.0
+    >>> c.class_average()
+    0.25
+    >>> c.reset()
+    >>> c.sum
+    array([0., 0., 0., 0.])
+    """
+
+    def __init__(self, classes):
+        self.classes = classes
+        self.num_classes = len(classes)
+        self.val = 0
+        self.sum = np.zeros(self.num_classes)
+        self.count = np.zeros(self.num_classes)
+        self.avg = np.zeros(self.num_classes)
+
+    def reset(self):
+        self.val = 0
+        self.sum = np.zeros(self.num_classes)
+        self.count = np.zeros(self.num_classes)
+        self.avg = np.zeros(self.num_classes)
+
+    def update(self, class_idx, val, n=1):
+        self.val = val
+        self.sum[class_idx] += val * n
+        self.count[class_idx] += n
+        self.avg[class_idx] = self.sum[class_idx] / self.count[class_idx]
+
+    def class_average(self):
+        return np.mean(self.avg)
+
+
 def collate_fn(batch):
     return tuple(zip(*batch))
 
