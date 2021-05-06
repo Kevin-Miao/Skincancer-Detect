@@ -13,6 +13,11 @@ pip install opencv-python
 pip install scikit-image
 pip install imgaug
 
+# If this line doesn't work, uncomment below
+python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
+
+# git clone https://github.com/facebookresearch/detectron2.git
+# python -m pip install -e detectron2
 
 
 git clone https://github.com/pytorch/vision.git
