@@ -1,0 +1,21 @@
+program: train.py
+method: bayes
+metric:
+  goal: maximize
+  name: val_mAP
+parameters:
+  batch_size:
+    values: [16, 32, 64, 128]
+  learning_rate:
+    distribution: log_uniform
+    min : -10.1
+    max : -0.9
+  epochs:
+    value: [15, 30, 60]
+  uncertain_handling:
+    values: [1, 0]
+early_terminate:
+  type: hyperband
+  s: 2
+  eta: 3
+  max_iter: 5

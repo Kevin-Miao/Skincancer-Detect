@@ -148,7 +148,7 @@ if __name__ == "__main__":
     batch_size=2,
     learning_rate=0.001,
     epochs=10,)
-    wandb.init(project = 'FSDL - SkinCancerDetection', config=hyperparameter_defaults )
+    wandb.init(project = 'FSDL', config=hyperparameter_defaults )
     config = wandb.config
     dataset = SkinData('/', 'final.csv', transform=transforms.Compose([ToTensor, Normalizer(normalization_data)]))
     train_data, test_data, valid_data = torch.utils.data.random_split(dataset,[int(0.7 * len(dataset)), int(0.15 * len(dataset)), int(0.15 * len(dataset))+1],  generator=torch.Generator().manual_seed(42))
@@ -156,6 +156,8 @@ if __name__ == "__main__":
     data_loader_test = torch.utils.data.DataLoader(test_data, batch_size=1)
     data_loader_valid =  torch.utils.data.DataLoader(valid_data, batch_size=1)
     model = initialize_model()
+    if torch.cuda.device_count() > 1:
+        model = nn.DataParallel(model)
     optimizer = torch.optim.SGD(model.parameters(), lr=config.learning_rate)
     lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
             optimizer, milestones=[15, 30], gamma=0.1, last_epoch=-1)

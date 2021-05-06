@@ -12,6 +12,7 @@ pip install torch
 pip install opencv-python
 pip install scikit-image
 pip install imgaug
+pip install mapcalc
 
 # If this line doesn't work, uncomment below
 python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
