@@ -11,6 +11,7 @@ import numpy as np
 from mapcalc import *
 from mapcalc import calculate_map, calculate_map_range
 import dataset
+import pdb
 from dataset import *
 
 
@@ -45,9 +46,12 @@ def calculate_AP(model, data_loader, metric, idx = 'val_mAP', th=0.5):
     for dis_in, disease in enumerate(diseases):
         for i, data in enumerate(data_loader):
             image, target = data
+            image = image.to(device)
+            target = {k: v.numpy()[0] for k, v in target.items()}
             class_id = inv_mapping[target['labels'].item()]
             if class_id == disease:
                 result = model(image)[0]
+                result = {k: v.cpu() for k, v in result.items()}
                 mAP = calculate_map(target, result, th)
                 metric[idx].update(dis_in, mAP, n=1)
     return  metric[idx].class_average()
@@ -62,18 +66,19 @@ def initialize_model():
 
 def train_model(model, optimizer, lr_scheduler, data_loader_train, data_loader_valid, data_loader_test, diseases, config):
     best_mAP = 0
+    header = 10 * '='
+    short_header = 5*'='
+    metrics = {'val_mAP': ClassMeter(diseases)}
+    metrics['train_loss'] = AverageMeter()
     for epoch in range(config.epochs):
+        header = 10 * '='
+        short_header = 5*'='
+        print(header, "Epoch {}".format(epoch), header)
         for i, d in enumerate(data_loader_train):
 
             # Header
             header = 10*"="
             short_header = 5 * '='
-            print(header, "Epoch {}".format(epoch), header)
-
-            # Metric Initialization
-            metrics = {'val_mAP': ClassMeter(diseases)}
-            metrics['train_loss'] = AverageMeter()
-            
 
             # Training
             model.train()
@@ -150,12 +155,13 @@ if __name__ == "__main__":
     epochs=10,)
     wandb.init(project = 'FSDL', config=hyperparameter_defaults )
     config = wandb.config
-    dataset = SkinData('/', 'final.csv', transform=transforms.Compose([ToTensor, Normalizer(normalization_data)]))
+    dataset = SkinData('/data/kevinmiao', 'final.csv', transform=transforms.Compose([ToTensor, Normalizer(normalization_data)]))
     train_data, test_data, valid_data = torch.utils.data.random_split(dataset,[int(0.7 * len(dataset)), int(0.15 * len(dataset)), int(0.15 * len(dataset))+1],  generator=torch.Generator().manual_seed(42))
     data_loader_train = torch.utils.data.DataLoader(train_data, batch_size=config.batch_size, collate_fn = collate_fn)
     data_loader_test = torch.utils.data.DataLoader(test_data, batch_size=1)
     data_loader_valid =  torch.utils.data.DataLoader(valid_data, batch_size=1)
     model = initialize_model()
+    model = model.to(device)
     if torch.cuda.device_count() > 1:
         model = nn.DataParallel(model)
     optimizer = torch.optim.SGD(model.parameters(), lr=config.learning_rate)

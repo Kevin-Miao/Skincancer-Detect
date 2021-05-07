@@ -15,6 +15,7 @@ from imgaug.augmentables.bbs import BoundingBox, BoundingBoxesOnImage
 import os
 import torch
 import pandas as pd
+import skimage.io as skio
 from skimage import io, transform
 import matplotlib.pyplot as plt
 import torchvision
@@ -60,7 +61,7 @@ class SkinData(Dataset):
             - 'id': idx
         """
         datapoint = self.data.iloc[idx]
-        image = Image.open(datapoint['path'])
+        image = Image.open(self.root_dir + '/' + datapoint['path'])
         image_id = datapoint['image_id']
         target = {}
         minx = datapoint['xmin']

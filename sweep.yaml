@@ -5,15 +5,13 @@ metric:
   name: val_mAP
 parameters:
   batch_size:
-    values: [16, 32, 64, 128]
+    values: [8, 16, 32]
   learning_rate:
     distribution: log_uniform
     min : -10.1
-    max : -0.9
+    max : -2.3
   epochs:
-    value: [15, 30, 60]
-  uncertain_handling:
-    values: [1, 0]
+    value: 15
 early_terminate:
   type: hyperband
   s: 2
