@@ -148,7 +148,7 @@ def UnNormalizer(meta):
         """
         image, target = it
         function = torchvision.transforms.Normalize(
-            mean=-meta['mean'],
+            mean=-meta['mean']/meta['std'],
             std=1/meta['std'],
         )
         img = function(image)
