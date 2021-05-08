@@ -99,6 +99,9 @@ class ClassMeter(object):
     def class_average(self):
         return np.mean(self.avg)
 
+    def sample_based_average(self):
+        return np.sum(self.sum) / np.sum(self.count)
+
 
 def collate_fn(batch):
     return tuple(zip(*batch))

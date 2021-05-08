@@ -107,7 +107,7 @@ def train_model(model, optimizer, lr_scheduler, data_loader_train, data_loader_v
             
             # Print Summary
             print(short_header, "Validation", short_header)
-            current_mAP = metrics['val_mAP'].class_average()
+            current_mAP = metrics['val_mAP'].sample_based_average()
             print('[Val average mAP] : {}'.format(current_mAP))                                                                                                                           
             # Log Values
             wandb.log({'val_mAP': current_mAP, 'epoch':epoch})
@@ -133,7 +133,7 @@ def train_model(model, optimizer, lr_scheduler, data_loader_train, data_loader_v
     with torch.no_grad():
         calculate_AP(model, data_loader_test, test_metrics, idx='test_mAP')
     print(header, "Test", header)
-    test_mAP = test_metrics['test_mAP'].class_average()
+    test_mAP = test_metrics['test_mAP'].sample_based_average()
     print('[Test average mAP] : {}'.format(test_mAP))
 
     # LOG STUFF
@@ -156,6 +156,7 @@ if __name__ == "__main__":
     wandb.init(project = 'FSDL', config=hyperparameter_defaults )
     config = wandb.config
     dataset = SkinData('/data/kevinmiao', 'final.csv', transform=transforms.Compose([ToTensor, Normalizer(normalization_data)]))
+    wandb.log({'new_metric':True})
     train_data, test_data, valid_data = torch.utils.data.random_split(dataset,[int(0.7 * len(dataset)), int(0.15 * len(dataset)), int(0.15 * len(dataset))+1],  generator=torch.Generator().manual_seed(42))
     data_loader_train = torch.utils.data.DataLoader(train_data, batch_size=config.batch_size, collate_fn = collate_fn)
     data_loader_test = torch.utils.data.DataLoader(test_data, batch_size=1)
